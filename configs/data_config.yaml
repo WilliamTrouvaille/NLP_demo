@@ -1,0 +1,9 @@
+default:
+  pattern: "*.csv"
+  
+datasets:
+  hotel_reviews:
+    files: "ChnSentiCorp_htl_all.csv"
+    encoding: "utf-8"
+  product_reviews:
+    pattern: "product_*.csv"
