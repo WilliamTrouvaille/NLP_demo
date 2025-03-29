@@ -182,24 +182,3 @@ class ConfigurableDataLoader(BaseDataLoader):
             file_name=dataset_config.get('files'),
             pattern=dataset_config.get('pattern', '*.csv')
         )
-
-
-if __name__ == "__main__":
-    # 测试代码
-    try:
-        logger.info("启动数据加载测试...")
-
-        # 测试配置加载器
-        config_loader = ConfigurableDataLoader()
-        print("\n配置文件结构示例:", list(config_loader.config['datasets'].keys()))
-
-        # 测试实际数据加载
-        test_df = config_loader.load_dataset("hotel_reviews")
-        print(f"\n成功加载数据示例:\n{test_df.head(3)}")
-        print(f"共加载 {len(test_df)} 条记录")
-
-        logger.info("数据加载测试通过")
-
-    except Exception as e:
-        logger.error("数据加载测试失败", exc_info=True)
-        sys.exit(1)
