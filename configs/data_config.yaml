@@ -1,5 +1,8 @@
 default:
     pattern: "*.csv"
+model:
+  max_vocab: 10000
+  max_len: 200
 
 datasets:
     hotel_reviews:
