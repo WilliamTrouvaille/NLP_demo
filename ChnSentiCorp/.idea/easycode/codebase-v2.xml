@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="com.obiscr.chatgpt.settings.EasyCodeState">
+    <option name="projectFiles" value="$PROJECT_DIR$/src/data_preprocess/ChnSentiCorp.py;D:/CODE/Python/nlp_demo/src/data_loader.py;D:/CODE/Python/nlp_demo/README.md" />
+  </component>
+</project>
