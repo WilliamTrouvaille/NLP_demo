@@ -1,0 +1,10 @@
+raw_path: "../data/raw/weibo_senti_100k.csv"
+processed_path: "../data/processed/processed_data.csv"
+stopwords_path: "../config/cn_stopwords.txt"
+
+split_ratio:
+  train: 0.7
+  val: 0.15
+  test: 0.15
+split_output_dir: "../data/split_data"
+random_seed: 42
