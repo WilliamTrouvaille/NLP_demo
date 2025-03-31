@@ -8,3 +8,25 @@ split_ratio:
   test: 0.15
 split_output_dir: "../data/split_data"
 random_seed: 42
+
+training:
+  train_path: "../data/split_data/train.csv"
+  val_path: "../data/split_data/val.csv"
+  save_dir: "../models"
+  
+  # 训练参数
+  epochs: 20
+  batch_size: 64
+  lr: 0.001
+  optimizer: "adam"
+  grad_clip: 5.0
+  patience: 3
+  
+  # 模型参数
+  model:
+    type: "lstm"
+    embed_dim: 128
+    hidden_dim: 256
+    num_layers: 2
+    bidirectional: true
+    dropout: 0.5
