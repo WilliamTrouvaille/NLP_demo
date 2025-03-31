@@ -1,32 +1,38 @@
+stopwords_path: "../config/stopwords.txt"
+network_dict_path: "../config/network_phrases.txt"
+emoticon_path: "../config/emoticon_mappings.txt"
+
 raw_path: "../data/raw/weibo_senti_100k.csv"
 processed_path: "../data/processed/processed_data.csv"
-stopwords_path: "../config/cn_stopwords.txt"
+
+split_output_dir: "../data/split_data"
+
 
 split_ratio:
-  train: 0.7
-  val: 0.15
-  test: 0.15
-split_output_dir: "../data/split_data"
+    train: 0.7
+    val: 0.15
+    test: 0.15
 random_seed: 42
 
+
 training:
-  train_path: "../data/split_data/train.csv"
-  val_path: "../data/split_data/val.csv"
-  save_dir: "../models"
-  
-  # 训练参数
-  epochs: 20
-  batch_size: 64
-  lr: 0.001
-  optimizer: "adam"
-  grad_clip: 5.0
-  patience: 3
-  
-  # 模型参数
-  model:
-    type: "lstm"
-    embed_dim: 128
-    hidden_dim: 256
-    num_layers: 2
-    bidirectional: true
-    dropout: 0.5
+    train_path: "../data/split_data/train.csv"
+    val_path: "../data/split_data/val.csv"
+    test_path: "../data/split_data/test.csv"
+    save_dir: "../models"
+
+    # 训练参数
+    bert_model: "bert-base-chinese"
+    epochs: 20
+    batch_size: 64
+    lr: 0.00002
+    optimizer: "adam"
+    grad_clip: 1.0
+    max_length: 128
+    warmup_steps: 500
+    total_steps: 10000
+    weight_decay: 0.01
+    adam_epsilon: 0.000000001
+    max_grad_norm: 1.0
+    patience: 3
+    freeze_bert: false
