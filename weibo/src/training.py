@@ -6,6 +6,7 @@ from typing import Dict, Tuple, List
 
 import numpy as np
 import pandas as pd
+from tabulate import tabulate
 import torch
 from sklearn.metrics import (accuracy_score, classification_report,
                              confusion_matrix, f1_score, roc_auc_score)
@@ -77,6 +78,9 @@ class BertTrainer:
         self.early_stopping = EarlyStopping(patience=self.config['patience'])
         self.progress = None  # 进度条控制器
         self.current_epoch = 1
+        self.history = []  # 训练历史记录
+        self.best_metrics = {'f1': 0.0}  # 最佳指标跟踪
+        self.best_accuracy = 0.0  # 跟踪最佳准确率
 
         logger.info(f"训练设备: {self.device}")
         logger.debug(f"训练配置: {self.config}")
@@ -316,13 +320,23 @@ class BertTrainer:
                     break
 
                 # 保存最佳模型
-                if val_metrics['f1'] > self.early_stopping.best_metrics.get('f1', 0):
+                current_acc = val_metrics['acc']
+                if current_acc > self.best_accuracy:
+                    self.best_accuracy = current_acc
                     self._save_checkpoint(epoch)
-                    logger.info(f"发现新的最佳模型，已保存至指定路径")
+                    logger.info(f"发现新的最佳准确率 {current_acc:.4f}，已保存模型")
+                else:
+                    logger.info(f"当前准确率 {current_acc:.4f} 未超过最佳 {self.best_accuracy:.4f}，不保存模型")
+
+            logger.info(f"训练结束，保存最终模型")
+            self._save_checkpoint(epoch)
 
             # 最终测试
             logger.info("启动最终测试")
-            _, test_metrics = self.evaluate(test_loader, mode='test')
+            _, test_metrics = self.evaluate(
+                test_loader,
+                mode='test'
+            )
             self._log_final_results(test_metrics)
 
         except KeyboardInterrupt:
@@ -338,8 +352,12 @@ class BertTrainer:
             'epoch': epoch,
             'train_loss': train_loss,
             'val_loss': val_loss,
-            **metrics
+            'acc': metrics['acc']
         })
+
+        # 打印最近五次结果
+        self._print_recent_history()
+
         logger.debug(f"更新训练历史记录: Epoch {epoch}")
 
     def _check_early_stopping(self, val_loss: float, metrics: Dict) -> bool:
@@ -379,13 +397,33 @@ class BertTrainer:
         logger.info(f"测试准确率: {test_metrics['acc']:.4f}")
         logger.info(f"测试F1分数: {test_metrics['f1']:.4f}")
         logger.info(f"测试AUC-ROC: {test_metrics['roc_auc']:.4f}")
-        logger.info("\n分类报告:\n" + classification_report(
-            test_metrics['classification_report']['0']['support'],
-            None,
-            target_names=['负面', '正面'],
-            digits=4
-        ))
+        # logger.info("\n分类报告:\n" + classification_report(
+        #     test_metrics['classification_report']['0']['support'],
+        #     None,
+        #     target_names=['负面', '正面'],
+        #     digits=4
+        # ))
         logger.info(f"混淆矩阵:\n{test_metrics['confusion_matrix']}")
+
+    def _print_recent_history(self):
+        """打印最近五次训练结果"""
+        headers = ["Epoch", "Train Loss", "Val Loss", "Val Acc"]
+        rows = []
+
+        # 只保留最近五次记录
+        recent_history = self.history[-5:]
+        for record in recent_history:
+            rows.append([
+                record['epoch'],
+                f"{record['train_loss']:.4f}",
+                f"{record['val_loss']:.4f}",
+                f"{record['acc']:.4f}"
+            ])
+
+        # 构建表格输出
+
+        print("\n最近五次训练结果：")
+        print(tabulate(rows, headers=headers, tablefmt="grid"))
 
 
 class EarlyStopping:

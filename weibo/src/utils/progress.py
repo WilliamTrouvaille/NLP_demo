@@ -25,7 +25,11 @@ class TrainingProgress:
         self.train_steps = train_loader_len
         self.val_steps = val_loader_len
         self.metrics = metrics
-        self.colours = colours or {'train': '#00ff00', 'val': '#ffff00'}
+        self.colours = colours or {
+            'train': '#00ff00',
+            'val': '#ffff00',
+            'test': '#00ffff'  # 新增test模式的默认颜色
+        }
 
         # 训练计时
         self.epoch_start_time = None
@@ -52,12 +56,17 @@ class TrainingProgress:
         """
         total_steps = self.train_steps if mode == 'train' else self.val_steps
         desc = f"├─ {mode.capitalize()}" if current_epoch else f"{mode.capitalize()}"
+        # 颜色回退机制
+        color = self.colours.get(
+            mode,
+            '#FFFFFF'  # 默认白色
+        )
 
         return tqdm(
             total=total_steps,
             desc=desc,
             bar_format="  {l_bar}{bar:15}{r_bar}",
-            colour=self.colours[mode],
+            colour=color,
             position=1,
             leave=False
         )

@@ -22,6 +22,7 @@ training:
     save_dir: "../models"
 
     # 训练参数
+    save_best_only: True  # 是否只保存最佳模型
     bert_model: "bert-base-chinese"
     epochs: 20
     batch_size: 64
@@ -36,3 +37,18 @@ training:
     max_grad_norm: 1.0
     patience: 3
     freeze_bert: false
+
+    # 进度条颜色配置
+    progress_colors:
+        train: '#00ff00'
+        val: '#ffff00'
+        test: '#0000ff'  # 蓝色表示测试模式
+
+#    # 模型参数
+#    model:
+#        type: "lstm"
+#        embed_dim: 128
+#        hidden_dim: 256
+#        num_layers: 2
+#        bidirectional: true
+#        dropout: 0.5
