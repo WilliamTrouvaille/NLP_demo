@@ -1,0 +1,28 @@
+# config/config.yaml
+project:
+  root_dir: "."  # 自动定位项目根目录
+  seed: 42       # 随机种子
+
+data:
+  train_path: "data/dh_msra.txt"
+  label_scheme: "BIOES"  # 可选BIO/BIOES
+  max_seq_length: 128     # 文本截断长度
+  train_ratio: 0.8        # 训练集比例
+  val_ratio: 0.1          # 验证集比例
+
+model:
+  pretrained_name: "bert-base-chinese"  # HuggingFace模型名
+  hidden_dim: 256          # BiLSTM隐藏层维度
+  lstm_layers: 2           # BiLSTM层数
+  dropout: 0.3
+
+training:
+  batch_size: 32
+  learning_rate: 3e-5
+  crf_learning_rate: 1e-3 # CRF层特殊学习率
+  epochs: 10
+  device: "cuda" if available else "cpu"
+
+logging:
+  log_dir: "logs/"
+  model_dir: "models/"
