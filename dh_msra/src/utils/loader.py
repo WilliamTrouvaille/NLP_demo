@@ -1,10 +1,9 @@
-# src/utils/loader.py
 import yaml
 from pathlib import Path
 
 
 class Loader:
-    """配置加载工具类（跨模块复用）"""
+    """加载工具类（跨模块复用）"""
 
     @staticmethod
     def get_root_dir() -> Path:

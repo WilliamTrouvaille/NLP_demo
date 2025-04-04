@@ -1,6 +1,5 @@
-from loader import Loader
-from logging import Logger
-from progress import TrainingProgress
+from .loader import Loader
+from .progress import TrainingProgress
+from .logger import LoggerHandler
 
-
-__all__ = ['Loader', 'Logger', 'TrainingProgress']
+__all__ = ['Loader', 'LoggerHandler', 'TrainingProgress']
