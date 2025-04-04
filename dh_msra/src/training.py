@@ -1,9 +1,10 @@
-from collections import defaultdict
+from collections import defaultdict, deque
 from datetime import datetime
 from pathlib import Path
 
 import numpy as np
 import torch
+from sklearn.metrics import f1_score
 from torch.optim import AdamW
 from torch.utils.data import Dataset, DataLoader
 from transformers import BertTokenizerFast, BertForTokenClassification
@@ -176,6 +177,8 @@ class NERTrainer:
         )
 
         best_score = 0
+        recent_metrics = deque(maxlen=5)
+
         for epoch in range(config['training']['num_epochs']):
             epoch_progress = progress.epoch_progress(epoch + 1)
 
@@ -216,6 +219,26 @@ class NERTrainer:
             # 验证阶段
             val_metrics = self.evaluate()
 
+            # 保存最近五个 epoch 的评估参数
+            recent_metrics.append({
+                'epoch': epoch + 1,
+                'train_loss': np.mean(train_metrics['loss']),
+                'val_loss': val_metrics['loss'],
+                'val_acc': val_metrics['acc'],
+                'val_f1': val_metrics['f1']
+            })
+
+            # 输出最近五个 epoch 的评估参数
+            self.logger.info("最近五个 epoch 的评估参数：")
+            for metrics in recent_metrics:
+                self.logger.info(
+                    f"Epoch {metrics['epoch']}: "
+                    f"Train Loss: {metrics['train_loss']:.4f}, "
+                    f"Val Loss: {metrics['val_loss']:.4f}, "
+                    f"Val Acc: {metrics['val_acc']:.4f}, "
+                    f"Val F1: {metrics['val_f1']:.4f}"
+                )
+
             # 保存最佳模型
             if val_metrics['f1'] > best_score:
                 best_score = val_metrics['f1']
@@ -229,6 +252,10 @@ class NERTrainer:
             })
             epoch_progress.update(1)
 
+        # 最终评估之前保存一次模型
+        self.save_model('final')
+        self.logger.info("最终模型已保存")
+
         self.logger.info("训练流程完成")
 
     def evaluate(self):
@@ -236,6 +263,8 @@ class NERTrainer:
         self.logger.info("开始模型评估...")
         self.model.eval()
         metrics = defaultdict(float)
+        all_preds, all_labels = [], []
+
         progress = TrainingProgress(
             total_epochs=1,
             train_loader_len=len(self.val_loader),
@@ -256,6 +285,12 @@ class NERTrainer:
                 loss = outputs.loss.item()
                 preds = torch.argmax(outputs.logits, dim=-1)
                 mask = (batch['labels'] != -100)
+
+                # 收集预测和真实标签
+                all_preds.extend(preds[mask].cpu().numpy())
+                all_labels.extend(batch['labels'][mask].cpu().numpy())
+
+                # 计算准确率
                 correct = (preds[mask] == batch['labels'][mask]).sum().item()
                 total = mask.sum().item()
 
@@ -269,6 +304,12 @@ class NERTrainer:
                     {'loss': loss, 'acc': correct / total if total > 0 else 0}
                 )
 
+        # 计算 F1 值
+        if len(all_preds) > 0 and len(all_labels) > 0:
+            metrics['f1'] = f1_score(all_labels, all_preds, average='macro')
+        else:
+            metrics['f1'] = 0.0
+
         self.logger.info("模型评估完成")
         return {k: v / len(self.val_loader) for k, v in metrics.items()}
 
@@ -276,20 +317,24 @@ class NERTrainer:
         """保存模型"""
         self.logger.info("开始保存模型...")
         model_dir = Path(config['logging']['model_dir'])
+        model_dir = Path(root) / model_dir
+
         model_dir.mkdir(exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"macbert-ner-epoch{epoch}-{timestamp}.bin"
 
-        torch.save(self.model.state_dict(), model_dir / filename)
-        self.logger.info(f"模型已保存至：{filename}")
+        # torch.save(self.model.state_dict(), model_dir / filename)
+        self.logger.info(f"模型已保存至：{model_dir / filename}")
 
 
 def main():
     try:
         logger.info("启动训练任务...")
-        trainer = NERTrainer(dry_run=True)
-        trainer.prepare_data()
-        trainer.train()
+        # trainer = NERTrainer(dry_run=True)
+        trainer = NERTrainer()
+        # trainer.prepare_data()
+        # trainer.train()
+        trainer.save_model(1)
         logger.info("训练任务完成")
     except Exception as e:
         logger.error(f"训练任务失败：{e}")
