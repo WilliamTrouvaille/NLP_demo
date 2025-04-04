@@ -3,16 +3,19 @@ import sys
 from pathlib import Path
 from datetime import datetime
 
+from src.utils import Loader
+
 
 class LoggerHandler:
     """
     单例模式的日志封装类
     功能：支持控制台+文件双输出、自动创建日志目录、动态时间戳命名
-    用法：直接调用Logger().debug/info/warning/error/critical方法
+    用法：直接调用LoggerHandler().debug/info/warning/error/critical方法
     """
+    logger = None
     _instance = None
 
-    def __new__(cls, log_dir="logs", level=logging.DEBUG,
+    def __new__(cls, level=logging.DEBUG,
                 fmt='[%(asctime)s] [%(levelname)s] %(message)s'):
         if not cls._instance:
             cls._instance = super().__new__(cls)
@@ -21,6 +24,9 @@ class LoggerHandler:
             cls.logger.setLevel(level)
 
             # 创建日志目录
+            root = Loader.get_root_dir()
+            log_dir = Path(root) / "logs"
+            log_dir.mkdir(exist_ok=True)
             Path(log_dir).mkdir(exist_ok=True)
 
             # 定义格式器
