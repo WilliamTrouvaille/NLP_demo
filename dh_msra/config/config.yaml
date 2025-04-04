@@ -1,9 +1,28 @@
 data:
-  raw_path: "data/raw/dh_msra.txt"
-  processed_dir: "data/processed"
-  splits:
-    train: 0.7
-    val: 0.15
-    test: 0.15
-  seed: 42
-  shuffle: true
+    raw_path: "data/raw/dh_msra.txt"
+    processed_dir: "data/processed"
+    splits:
+        train: 0.7
+        val: 0.15
+        test: 0.15
+    seed: 42
+    shuffle: true
+
+model:
+    pretrained: "hfl/chinese-macbert-base"
+    num_labels: 7  # 根据数据集的标签类型数量确定
+    dropout: 0.1
+
+training:
+    device: "cpu"
+#    device: "cuda"
+    batch_size: 32
+    num_epochs: 1
+#    num_epochs: 20
+    learning_rate: 2.0e-5
+    weight_decay: 0.01
+    max_seq_length: 128
+    eval_steps: 1024  # 每多少步验证一次
+
+logging:
+    model_dir: "models"

@@ -1,6 +1,7 @@
-from tqdm.auto import tqdm
-from typing import Dict, Optional
 import time
+from typing import Dict
+
+from tqdm.auto import tqdm
 
 
 class TrainingProgress:

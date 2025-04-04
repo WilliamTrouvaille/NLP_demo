@@ -31,6 +31,9 @@ class DataProcessor:
         self.raw_path.parent.mkdir(parents=True, exist_ok=True)
         self.processed_dir.mkdir(parents=True, exist_ok=True)
 
+        # 确保目录存在
+        self.raw_path = Path(config['data']['raw_path'])
+        self.processed_dir = Path(config['data']['processed_dir'])
         self.splits = config['data']['splits']
         self.seed = config.get('seed', 42)
         self.shuffle = config.get('shuffle', True)
